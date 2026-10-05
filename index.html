@@ -20,6 +20,17 @@
   </div>
   <canvas id="game" width="800" height="450"></canvas>
   <p class="help">Mouse: apuntar · Clic / Espacio: disparar · W/S o ↑/↓: moverte · R: reiniciar</p>
+  <button class="btn-gold" id="prizesBtn" type="button">Premios</button>
+
+  <div class="modal" id="prizesModal" hidden>
+    <div class="modal-card">
+      <button class="close" id="closePrizes" type="button" aria-label="Cerrar">×</button>
+      <div class="eyebrow">Recompensas</div>
+      <h2>Premios</h2>
+      <ul id="prizesList"></ul>
+      <p class="note">Tu mejor marca: <b id="bestScore">0</b> puntos<br><span id="nextGoal"></span></p>
+    </div>
+  </div>
   <script src="script.js"></script>
 </body>
 </html>

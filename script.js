@@ -8,6 +8,18 @@ const el = {
   lives: document.getElementById("lives"),
 };
 
+// ---- PREMIOS: edita aquí los puntos y los textos ----
+const PREMIOS = [
+  { puntos: 60,  texto: "Puedes pedirme algo que quieras." },
+  { puntos: 150, texto: "Tienes derecho a pedirme tres cosas conmigo y no me puedo negar." },
+  { puntos: 280, texto: "Yo tengo que darte o consentirte lo que tú quieras, de la manera que tú quieras." },
+  { puntos: 450, texto: "Puedes pedirme cinco cosas conmigo y no me puedo negar." },
+  { puntos: 660, texto: "Un día completo a tu manera: tú eliges el plan y yo te acompaño." },
+  { puntos: 910, texto: "Puedes pedirme diez cosas y no me puedo negar." },
+  { puntos: 1200, texto: "Premio mayor: pides lo que quieras, las veces que quieras, durante toda una semana." },
+];
+let best = 0, modalOpen = false;
+
 let player, target, bullets, particles, score, level, lives, gameOver, cooldown, time;
 const stars = Array.from({ length: 70 }, () => ({ x: Math.random() * W, y: Math.random() * (H - 20), s: Math.random() < .2 ? 2 : 1, p: Math.random() * 6 }));
 const mouse = { x: W / 2, y: H / 2 };
@@ -37,11 +49,12 @@ function difficulty() {
 function updateHud() {
   el.score.textContent = score;
   el.level.textContent = level;
+  if (score > best) best = score;
   el.lives.textContent = "❤".repeat(Math.max(0, lives)) || "💀";
 }
 
 function shoot() {
-  if (gameOver || cooldown > 0) return;
+  if (gameOver || modalOpen || cooldown > 0) return;
   const a = angle();
   const d = difficulty();
   bullets.push({
@@ -65,7 +78,7 @@ function boom(x, y, color) {
 }
 
 function update() {
-  if (gameOver) return;
+  if (gameOver || modalOpen) return;
   time++;
   if (cooldown > 0) cooldown--;
 
@@ -190,10 +203,32 @@ window.addEventListener("keydown", e => {
   const k = e.key.toLowerCase();
   keys[k] = true;
   if (k === " ") { e.preventDefault(); shoot(); }
-  if (k === "r") reset();
+  if (k === "r" && !modalOpen) reset();
   if (k.startsWith("arrow")) e.preventDefault();
 });
 window.addEventListener("keyup", e => (keys[e.key.toLowerCase()] = false));
+
+// Ventana de premios
+const modal = document.getElementById("prizesModal");
+function openPrizes() {
+  modalOpen = true;
+  const next = PREMIOS.find(p => p.puntos > best);
+  document.getElementById("bestScore").textContent = best;
+  document.getElementById("nextGoal").textContent = next
+    ? `Te faltan ${next.puntos - best} puntos para el siguiente premio.`
+    : "¡Desbloqueaste todos los premios!";
+  document.getElementById("prizesList").innerHTML = PREMIOS.map(p => {
+    const ok = best >= p.puntos;
+    return `<li class="${ok ? "unlocked" : ""}"><div class="pts">${p.puntos} puntos</div>` +
+      `<div class="txt">${p.texto}</div>${ok ? '<div class="tag">✓ Desbloqueado</div>' : ""}</li>`;
+  }).join("");
+  modal.hidden = false;
+}
+function closePrizes() { modalOpen = false; modal.hidden = true; }
+document.getElementById("prizesBtn").addEventListener("click", e => { e.target.blur(); openPrizes(); });
+document.getElementById("closePrizes").addEventListener("click", closePrizes);
+modal.addEventListener("click", e => { if (e.target === modal) closePrizes(); });
+window.addEventListener("keydown", e => { if (e.key === "Escape") closePrizes(); });
 
 reset();
 loop();
